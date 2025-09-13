@@ -1,6 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
+from app.core.config import settings
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
@@ -24,6 +25,10 @@ target_metadata = None
 # ... etc.
 
 
+def get_url():
+    return settings.DATABASE_URL
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -36,7 +41,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = settings.DATABASE_URL
     context.configure(
         url=url,
         target_metadata=target_metadata,
