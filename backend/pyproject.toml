@@ -5,13 +5,31 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "svelte-fastapi-backend"
 version = "0.1.0"
-description = "FastAPI template with async SQLAlchemy, Alembic, cookie sessions"
+description = "FastAPI template with async SQLAlchemy, Alembic, and cookie sessions"
+readme = "README.md"
 requires-python = ">=3.11"
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+license = { text = "MIT" }
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Typing :: Typed",
+]
+
+# --- Runtime dependencies for FastAPI backend ---
 dependencies = [
   "fastapi==0.115.0",
   "uvicorn[standard]==0.30.6",
-  "pydantic-settings==2.4.0",
   "pydantic==2.8.2",
+  "pydantic-settings==2.4.0",
   "sqlalchemy[asyncio]==2.0.36",
   "asyncpg==0.29.0",
   "alembic==1.13.2",
@@ -28,17 +46,160 @@ dev = [
   "pytest-asyncio==0.24.0",
   "coverage==7.6.1",
   "ruff==0.6.9",
-  "black==24.8.0",
+  "mypy==1.11.1",
   "anyio==4.4.0",
+  "pre-commit==3.8.0"
 ]
 
-[tool.black]
-line-length = 100
-target-version = ["py311"]
+[project.urls]
+Homepage = "https://github.com/your-org/your-repo"
+"Issues" = "https://github.com/your-org/your-repo/issues"
 
+# --- Package discovery (treat `app/` as the package root) ---
+[tool.setuptools.packages.find]
+where = ["app"]
+include = ["app*"]
+
+# =============================================================================
+# Testing (pytest) — lives in pyproject so no pytest.ini needed
+# =============================================================================
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--strict-config",
+  "--disable-warnings",
+]
+testpaths = [
+  "app/tests",
+]
+filterwarnings = [
+  "error",
+]
+
+# =============================================================================
+# Coverage.py — report & run configuration in pyproject
+# =============================================================================
+[tool.coverage.run]
+source = ["app"]
+branch = true
+omit = [
+  "app/__init__.py",
+  "alembic/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+precision = 1
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__ == .__main__.:",
+  "if typing.TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "return NotImplemented",
+  "\\.\\.\\.",
+]
+
+# =============================================================================
+# Ruff (linter + formatter) — single place for rules and formatting
+# =============================================================================
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-lint.select = ["E","F","I","UP","B","SIM","RUF"]
-lint.ignore = []
+src = ["app"]
+extend-exclude = [
+  "alembic/versions",
+]
 
+[tool.ruff.lint]
+# A pragmatic, batteries-included selection (can trim later if noisy)
+select = [
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "W",   # pycodestyle warnings
+  "I",   # isort
+  "UP",  # pyupgrade
+  "B",   # flake8-bugbear
+  "SIM", # flake8-simplify
+  "RUF", # ruff-specific
+  "ARG", # flake8-unused-arguments
+  "C4",  # flake8-comprehensions
+  "EM",  # flake8-errmsg
+  "ICN", # import conventions
+  "ISC", # implicit string concat
+  "G",   # logging format
+  "PGH", # pygrep-hooks
+  "PIE", # flake8-pie
+  "PL",  # pylint rules (subset)
+  "PT",  # pytest style
+  "RET", # return rules
+  "YTT", # 2020-era Python compatibility
+  "EXE", # executable shebang
+]
+ignore = [
+  "PLR",    # design/complexity rules (often noisy)
+  "ISC001", # conflicts with the formatter in some cases
+]
+unfixable = [
+  "F401",   # unused imports (sometimes intentional during scaffolding)
+  "F841",   # unused variables (ditto)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/versions/*.py" = ["E501", "F401", "F841"]
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "lf"
+
+# =============================================================================
+# mypy (type checking) — configured here, no mypy.ini needed
+# =============================================================================
+[tool.mypy]
+python_version = "3.11"
+files = ["app", "app/tests"]
+show_error_codes = true
+pretty = true
+
+# Pragmatic strictness: strong where it matters, not painful during scaffolding
+warn_unreachable = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_optional = true
+strict_equality = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+# Exclude generated or noisy paths (regex)
+exclude = [
+  "^alembic/versions/",
+]
+
+# Third-party libraries that mypy doesn’t fully type yet
+[[tool.mypy.overrides]]
+module = "sqlalchemy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "passlib.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "itsdangerous.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "httpx.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pydantic.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pydantic_settings.*"
+ignore_missing_imports = true

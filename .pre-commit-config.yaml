@@ -1,0 +1,82 @@
+ci:
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autofix_commit_msg: "style: pre-commit fixes"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: "v4.6.0"
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.6.9"
+    hooks:
+      # First, lint + autofix (config in backend/pyproject.toml)
+      - id: ruff
+        types_or: [python, pyi, jupyter]
+        files: ^backend/
+        exclude: ^backend/alembic/versions/
+        args: ["--fix", "--show-fixes"]
+      # Then, format
+      - id: ruff-format
+        files: ^backend/
+        exclude: ^backend/alembic/versions/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.11.1"
+    hooks:
+      - id: mypy
+        files: ^backend/(app|tests)/
+        exclude: ^backend/alembic/versions/
+        args:
+          - --install-types
+          - --non-interactive
+        additional_dependencies:
+          - pytest
+          - httpx
+          - pydantic
+          - pydantic-settings
+          - sqlalchemy
+          - python-dotenv
+          - fastapi
+          - types-passlib
+          - itsdangerous
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: "1.7.9"
+    hooks:
+      - id: bandit
+        name: bandit (backend/app only, no tests)
+        pass_filenames: false
+        # Only scan backend/app, recurse (-r), exclude tests + alembic versions
+        args: ["-q", "-r", "backend/app", "-x", "backend/app/tests,backend/alembic/versions"]
+        files: ^backend/app/
+        exclude: ^backend/app/tests/
+
+  # Frontend checks via local hooks (scripts must exist in web/package.json)
+  - repo: local
+    hooks:
+      - id: web-prettier
+        name: Web Prettier (format:check)
+        language: system
+        pass_filenames: false
+        files: ^web/
+        entry: bash -lc "cd web && npx prettier --check ."
+
+      - id: web-eslint
+        name: Web ESLint
+        language: system
+        pass_filenames: false
+        files: ^web/
+        entry: bash -lc "cd web && npx eslint ."

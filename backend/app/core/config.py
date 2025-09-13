@@ -1,9 +1,11 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import AnyUrl, field_validator
-from typing import List
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False
+    )
 
     ENV: str = "development"
     PROJECT_NAME: str = "My App"
@@ -17,7 +19,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
 
     # CORS / Frontend origin(s)
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:5173", "http://localhost"]
+    ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost"]
     SECURE_COOKIES: bool = False  # set True in prod
 
     SESSION_COOKIE_NAME: str = "sessionid"
@@ -38,5 +40,5 @@ class Settings(BaseSettings):
             return [s.strip() for s in v.split(",") if s.strip()]
         return v
 
-settings = Settings()
 
+settings = Settings()

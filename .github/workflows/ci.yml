@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  pre-commit:
+    name: Format + lint code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dev deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e backend[dev]
+
+      - name: Run pre-commit on all files
+        uses: pre-commit/action@v3.0.0
+        with:
+          extra_args: --hook-stage manual --all-files
+
+  checks:
+    name: Run tests for Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
+    runs-on: ${{ matrix.runs-on }}
+    needs: [pre-commit]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+        runs-on: [ubuntu-latest, macos-latest]
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d app_db"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+
+      - name: Install backend package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e backend[dev]
+
+      - name: Prepare environment
+        working-directory: backend
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_db
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          SECRET_KEY: testsecret
+          ENV: test
+          ALLOWED_ORIGINS: http://localhost:5173,http://localhost
+          SECURE_COOKIES: "false"
+        run: |
+          cp .env.example .env
+          # Override DB host for CI service
+          sed -i.bak 's/POSTGRES_HOST=.*/POSTGRES_HOST=localhost/' .env
+          sed -i.bak 's/POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=postgres/' .env
+          sed -i.bak 's/POSTGRES_DB=.*/POSTGRES_DB=app_db/' .env
+          sed -i.bak 's/POSTGRES_PORT=.*/POSTGRES_PORT=5432/' .env
+          alembic upgrade head
+
+      - name: Run tests
+        working-directory: backend
+        run: |
+          pytest -ra --cov --cov-report=xml --cov-report=term --durations=20
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3.1.4
+        with:
+          files: backend/coverage.xml
+          fail_ci_if_error: false

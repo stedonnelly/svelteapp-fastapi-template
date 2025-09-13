@@ -1,26 +1,31 @@
 import secrets
-from datetime import datetime, timedelta, timezone
-from typing import Optional
-from fastapi import Response, Request
-from itsdangerous import TimestampSigner, BadSignature
+from datetime import UTC, datetime, timedelta
+
+from fastapi import Request, Response
+from itsdangerous import BadSignature, TimestampSigner
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete
-from app.core.config import settings
-from app.models.session import Session
+
+from ..core.config import settings
+from ..models.session import Session
 
 _signer = TimestampSigner(settings.SECRET_KEY)
 
+
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
+
 
 def make_cookie_value(session_id: str) -> str:
     return _signer.sign(session_id).decode("utf-8")
 
-def read_cookie_value(cookie: str) -> Optional[str]:
+
+def read_cookie_value(cookie: str) -> str | None:
     try:
         return _signer.unsign(cookie, max_age=settings.SESSION_MAX_AGE_SECONDS).decode("utf-8")
     except BadSignature:
         return None
+
 
 async def create_session(db: AsyncSession, user_id: int) -> str:
     session_id = secrets.token_urlsafe(32)
@@ -29,11 +34,13 @@ async def create_session(db: AsyncSession, user_id: int) -> str:
     await db.commit()
     return session_id
 
+
 async def destroy_session(db: AsyncSession, session_id: str) -> None:
     await db.execute(delete(Session).where(Session.session_id == session_id))
     await db.commit()
 
-async def get_user_id_from_request(db: AsyncSession, request: Request) -> Optional[int]:
+
+async def get_user_id_from_request(db: AsyncSession, request: Request) -> int | None:
     cookie = request.cookies.get(settings.SESSION_COOKIE_NAME)
     if not cookie:
         return None
@@ -51,6 +58,7 @@ async def get_user_id_from_request(db: AsyncSession, request: Request) -> Option
         return None
     return user_id
 
+
 def set_session_cookie(response: Response, session_id: str) -> None:
     value = make_cookie_value(session_id)
     response.set_cookie(
@@ -63,6 +71,7 @@ def set_session_cookie(response: Response, session_id: str) -> None:
         path="/",
     )
 
+
 def clear_session_cookie(response: Response) -> None:
     response.delete_cookie(
         key=settings.SESSION_COOKIE_NAME,
@@ -71,4 +80,3 @@ def clear_session_cookie(response: Response) -> None:
         secure=settings.SECURE_COOKIES,
         samesite="lax" if not settings.SECURE_COOKIES else "strict",
     )
-

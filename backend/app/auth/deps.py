@@ -1,13 +1,16 @@
-from fastapi import Depends, HTTPException, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from app.db.session import get_session
 from app.auth.session_manager import get_user_id_from_request
+from app.db.session import get_session
 from app.models.user import User
+from fastapi import Depends, HTTPException, Request, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+get_session_dep = Depends(get_session)
+
 
 async def get_current_user(
     request: Request,
-    db: AsyncSession = Depends(get_session),
+    db: AsyncSession = get_session_dep,
 ) -> User:
     user_id = await get_user_id_from_request(db, request)
     if not user_id:
@@ -17,4 +20,3 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
-
