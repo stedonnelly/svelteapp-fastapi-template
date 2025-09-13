@@ -1,6 +1,4 @@
 @import 'tailwindcss';
-@plugin '@tailwindcss/forms';
-@plugin '@tailwindcss/typography';
 
 /* Color variables for light/dark themes */
 :root {
@@ -37,18 +35,26 @@ body {
 
 /* Example components using CSS variables with Tailwind’s arbitrary values */
 .card {
-	@apply rounded-2xl p-4 shadow;
 	background-color: var(--color-card-bg);
 }
 
 .btn {
-	@apply inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-medium;
 	background-color: var(--color-button-bg);
 	color: var(--color-button-fg);
 }
 
 .input {
-	@apply rounded-xl px-3 py-2 outline-none;
+	border-radius: 0.75rem;
+	/* rounded-xl */
+	padding-left: 0.75rem;
+	/* px-3 */
+	padding-right: 0.75rem;
+	/* px-3 */
+	padding-top: 0.5rem;
+	/* py-2 */
+	padding-bottom: 0.5rem;
+	/* py-2 */
+	outline: none;
 	background-color: var(--color-input-bg);
 	border: 1px solid var(--color-input-border);
 }

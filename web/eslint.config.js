@@ -36,5 +36,12 @@ export default ts.config(
 				svelteConfig
 			}
 		}
+	},
+	{
+		files: ['tailwind.config.cjs', 'postcss.config.cjs', 'vite.config.cjs'],
+		rules: {
+			'@typescript-eslint/no-require-imports': 'off',
+			'import/no-commonjs': 'off' // if you use eslint-plugin-import
+		}
 	}
 );
