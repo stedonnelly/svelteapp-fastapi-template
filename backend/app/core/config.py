@@ -35,9 +35,34 @@ class Settings(BaseSettings):
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def split_origins(cls, v):
+        # accept None / empty -> []
+        if v is None:
+            return []
+        # already a list -> return as-is
+        if isinstance(v, (list | tuple)):
+            return list(v)
+        # handle empty string
         if isinstance(v, str):
-            # allow comma-separated in .env
-            return [s.strip() for s in v.split(",") if s.strip()]
+            s = v.strip()
+            if not s:
+                return []
+            # allow JSON-style list: ["a","b"] or ['a','b']
+            if s.startswith("[") and s.endswith("]"):
+                try:
+                    import json
+
+                    parsed = json.loads(s)
+                    if isinstance(parsed, list):
+                        return parsed
+                except Exception:
+                    # fall through to comma-splitting
+                    print(
+                        "WARNING: ALLOWED_ORIGINS looks like a JSON list but could not be parsed"
+                        ", falling back to comma-splitting"
+                    )
+            # comma-separated values
+            return [p.strip() for p in s.split(",") if p.strip()]
+        # fallback: let pydantic handle/validate the value and fail loudly if invalid
         return v
 
 
