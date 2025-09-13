@@ -25,8 +25,13 @@ target_metadata = None
 # ... etc.
 
 
-def get_url():
-    return settings.DATABASE_URL
+def get_db_url() -> str:
+    url = settings.DATABASE_URL
+    # if the app uses an async URL, convert to a sync driver for Alembic
+    if isinstance(url, str) and "+asyncpg" in url:
+        # choose the sync driver you have available: '+psycopg2' or '+psycopg'
+        return url.replace("+asyncpg", "+psycopg2")
+    return url
 
 
 def run_migrations_offline() -> None:
@@ -54,14 +59,13 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
+    sync_url = get_db_url()
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
+    section = config.get_section(config.config_ini_section, {}) or {}
+    section["sqlalchemy.url"] = sync_url
 
-    """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

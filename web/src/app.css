@@ -1,3 +1,54 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+/* Color variables for light/dark themes */
+:root {
+	--color-bg: #ffffff;
+	--color-fg: #111827;
+	--color-card-bg: #f9fafb;
+	--color-button-bg: #111827;
+	--color-button-fg: #ffffff;
+	--color-input-bg: #ffffff;
+	--color-input-border: #e5e7eb;
+}
+
+:root[data-theme='dark'] {
+	--color-bg: #111827;
+	--color-fg: #e5e7eb;
+	--color-card-bg: #1f2937;
+	--color-button-bg: #e5e7eb;
+	--color-button-fg: #111827;
+	--color-input-bg: #111827;
+	--color-input-border: #374151;
+}
+
+/* Basic global resets and utility helpers */
+html,
+body,
+#svelte {
+	height: 100%;
+}
+
+body {
+	background-color: var(--color-bg);
+	color: var(--color-fg);
+}
+
+/* Example components using CSS variables with Tailwind’s arbitrary values */
+.card {
+	@apply rounded-2xl p-4 shadow;
+	background-color: var(--color-card-bg);
+}
+
+.btn {
+	@apply inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-medium;
+	background-color: var(--color-button-bg);
+	color: var(--color-button-fg);
+}
+
+.input {
+	@apply rounded-xl px-3 py-2 outline-none;
+	background-color: var(--color-input-bg);
+	border: 1px solid var(--color-input-border);
+}

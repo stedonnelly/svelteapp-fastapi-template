@@ -6,16 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "svelte-fastapi-backend"
 version = "0.1.0"
 description = "FastAPI template with async SQLAlchemy, Alembic, and cookie sessions"
-readme = "README.md"
 requires-python = ">=3.11"
 authors = [
   { name = "Your Name", email = "you@example.com" }
 ]
-license = { text = "MIT" }
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
@@ -38,6 +35,8 @@ dependencies = [
   "itsdangerous==2.2.0",
   "httpx==0.27.2",
   "orjson==3.10.7",
+  "pydantic[email]==2.8.2",
+  "psycopg2-binary==2.9.10",
 ]
 
 [project.optional-dependencies]
@@ -56,9 +55,9 @@ Homepage = "https://github.com/your-org/your-repo"
 "Issues" = "https://github.com/your-org/your-repo/issues"
 
 # --- Package discovery (treat `app/` as the package root) ---
-[tool.setuptools.packages.find]
-where = ["app"]
-include = ["app*"]
+# [tool.setuptools.packages.find]
+# where = ["app"]
+# include = ["app*"]
 
 # =============================================================================
 # Testing (pytest) — lives in pyproject so no pytest.ini needed
