@@ -55,9 +55,9 @@ Homepage = "https://github.com/your-org/your-repo"
 "Issues" = "https://github.com/your-org/your-repo/issues"
 
 # --- Package discovery (treat `app/` as the package root) ---
-# [tool.setuptools.packages.find]
+[tool.setuptools.packages.find]
 # where = ["app"]
-# include = ["app*"]
+include = ["app*"]
 
 # =============================================================================
 # Testing (pytest) — lives in pyproject so no pytest.ini needed
