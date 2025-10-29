@@ -1,5 +1,6 @@
 services:
   db:
+    # Using Postgres 16 Alpine image for a lightweight development database
     image: postgres:16-alpine
     container_name: template_db
     restart: unless-stopped
