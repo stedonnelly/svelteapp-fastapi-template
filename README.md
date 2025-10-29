@@ -1,6 +1,6 @@
 # Svelte + FastAPI Template
 
-[![CI](https://github.com/stedonnelly/svelteapp-fastapi-template/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/stedonnelly/svelteapp-fastapi-template/actions/workflows/ci.yml)
+[![CI](https://github.com/stedonnelly/svelteapp-fastapi-template/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/stedonnelly/svelteapp-fastapi-template/actions/workflows/ci.yml)
 
 A modern full-stack application template featuring:
 - **Frontend**: SvelteKit 2 with TypeScript, Tailwind CSS 4, and Vite
